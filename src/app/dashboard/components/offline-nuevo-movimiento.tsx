@@ -60,13 +60,15 @@ export function OfflineNuevoMovimiento() {
     setSaving(true);
     try {
       const now = new Date().toISOString();
+      const storedEmpresaId = localStorage.getItem("sc_empresaId") || "";
+      const storedUsuarioId = localStorage.getItem("sc_usuarioId") || "";
       await createMovimiento({
         id: crypto.randomUUID(),
-        empresaId: "",
+        empresaId: storedEmpresaId,
         tipo,
         cantidad: cantidadNum,
         motivo: motivo || null,
-        usuarioId: "",
+        usuarioId: storedUsuarioId,
         tallajeId,
         createdAt: now,
         _synced: false,

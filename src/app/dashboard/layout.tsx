@@ -49,7 +49,7 @@ export default async function DashboardLayout({
 
   return (
     <OfflineProvider>
-      <DexieSeeder />
+      <DexieSeeder empresaId={usuario.empresaId} usuarioId={usuario.id} />
       <div className="flex min-h-screen bg-slate-50">
         <ToastProvider />
         <Sidebar
