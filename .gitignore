@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# lighthouse
+.lh-tmp/
+lighthouse-report.json
+
+# agent tools (not part of the project)
+.agents/
+skills-lock.json
+
+testsprite_tests\tmp\config.json
