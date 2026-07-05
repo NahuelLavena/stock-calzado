@@ -50,19 +50,32 @@ export interface SyncQueueEntry {
   status: "pending" | "processing" | "failed";
 }
 
+export interface OfflineAuthSession {
+  id: string;
+  email: string;
+  nombre: string;
+  rol: string;
+  empresaId: string;
+  empresaNombre: string;
+  puedeEditarStock: boolean;
+  createdAt: string;
+}
+
 class StockCalzadoDB extends Dexie {
   productos!: EntityTable<OfflineProducto, "id">;
   tallas!: EntityTable<OfflineTallaje, "id">;
   movimientos!: EntityTable<OfflineMovimiento, "id">;
   syncQueue!: EntityTable<SyncQueueEntry, "id">;
+  authSession!: EntityTable<OfflineAuthSession, "id">;
 
   constructor() {
     super("StockCalzadoDB");
-    this.version(1).stores({
+    this.version(2).stores({
       productos: "id, empresaId, sku, _synced",
       tallas: "id, productoId, _synced",
       movimientos: "id, empresaId, tallajeId, _synced",
       syncQueue: "++id, entity, entityId, status, timestamp",
+      authSession: "id, email",
     });
   }
 }

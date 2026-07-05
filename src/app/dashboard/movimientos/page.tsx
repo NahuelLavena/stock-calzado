@@ -41,92 +41,109 @@ export default async function MovimientosPage({
   const usuarioId = typeof params.usuarioId === "string" ? params.usuarioId : "";
   const page = Math.max(1, parseInt(typeof params.page === "string" ? params.page : "1"));
 
-  const where: Record<string, unknown> = {
-    usuario: { empresaId: usuario.empresaId },
-  };
+  let movimientos: Array<{ id: string; tipo: string; cantidad: number; createdAt: Date; usuario: { nombre: string }; tallaje: { talla: string; color: string; producto: { nombre: string; sku: string } } }> = [];
+  let total = 0;
+  let resumen = { _count: 0, _sum: { cantidad: 0 } };
+  let productos: Array<{ id: string; nombre: string; sku: string }> = [];
+  let usuarios: Array<{ id: string; nombre: string }> = [];
+  let entradas = { _sum: { cantidad: 0 } };
+  let salidas = { _sum: { cantidad: 0 } };
 
-  if (tipo) {
-    where.tipo = tipo;
-  }
+  try {
+    const where: Record<string, unknown> = {
+      usuario: { empresaId: usuario.empresaId },
+    };
 
-  if (productoId) {
-    where.tallaje = { ...where.tallaje as Record<string, unknown>, productoId };
-  }
-
-  if (fechaDesde || fechaHasta) {
-    where.createdAt = {};
-    if (fechaDesde) {
-      (where.createdAt as Record<string, unknown>).gte = new Date(fechaDesde);
+    if (tipo) {
+      where.tipo = tipo;
     }
-    if (fechaHasta) {
-      const hasta = new Date(fechaHasta);
-      hasta.setHours(23, 59, 59, 999);
-      (where.createdAt as Record<string, unknown>).lte = hasta;
+
+    if (productoId) {
+      where.tallaje = { ...where.tallaje as Record<string, unknown>, productoId };
     }
-  }
 
-  if (usuarioId) {
-    where.usuario = { ...where.usuario as Record<string, unknown>, id: usuarioId };
-  }
+    if (fechaDesde || fechaHasta) {
+      where.createdAt = {};
+      if (fechaDesde) {
+        (where.createdAt as Record<string, unknown>).gte = new Date(fechaDesde);
+      }
+      if (fechaHasta) {
+        const hasta = new Date(fechaHasta);
+        hasta.setHours(23, 59, 59, 999);
+        (where.createdAt as Record<string, unknown>).lte = hasta;
+      }
+    }
 
-  const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+    if (usuarioId) {
+      where.usuario = { ...where.usuario as Record<string, unknown>, id: usuarioId };
+    }
 
-  const [movimientos, total, resumen, productosRaw, usuariosRaw, entradas, salidas] = await Promise.all([
-    prisma.movimiento.findMany({
-      where,
-      include: {
-        usuario: { select: { nombre: true } },
-        tallaje: {
-          include: {
-            producto: { select: { nombre: true, sku: true } },
+    const inicioMes = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+    const [movimientosRaw, totalRaw, resumenRaw, productosRaw, usuariosRaw, entradasRaw, salidasRaw] = await Promise.all([
+      prisma.movimiento.findMany({
+        where,
+        include: {
+          usuario: { select: { nombre: true } },
+          tallaje: {
+            include: {
+              producto: { select: { nombre: true, sku: true } },
+            },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-      take: ITEMS_PER_PAGE,
-      skip: (page - 1) * ITEMS_PER_PAGE,
-    }),
-    prisma.movimiento.count({ where }),
-    prisma.movimiento.aggregate({
-      where: {
-        usuario: { empresaId: usuario.empresaId },
-        createdAt: { gte: inicioMes },
-      },
-      _sum: { cantidad: true },
-      _count: true,
-    }),
-    prisma.producto.findMany({
-      where: { empresaId: usuario.empresaId, activo: true },
-      select: { id: true, nombre: true, sku: true },
-      orderBy: { nombre: "asc" },
-    }),
-    usuario.rol === "ADMIN"
-      ? prisma.usuario.findMany({
-          where: { empresaId: usuario.empresaId },
-          select: { id: true, nombre: true },
-          orderBy: { nombre: "asc" },
-        })
-      : Promise.resolve([]),
-    prisma.movimiento.aggregate({
-      where: {
-        usuario: { empresaId: usuario.empresaId },
-        tipo: { in: ["ENTRADA", "DEVOLUCION"] },
-        createdAt: { gte: inicioMes },
-      },
-      _sum: { cantidad: true },
-    }),
-    prisma.movimiento.aggregate({
-      where: {
-        usuario: { empresaId: usuario.empresaId },
-        tipo: { in: ["SALIDA", "AJUSTE_NEG"] },
-        createdAt: { gte: inicioMes },
-      },
-      _sum: { cantidad: true },
-    }),
-  ]);
+        orderBy: { createdAt: "desc" },
+        take: ITEMS_PER_PAGE,
+        skip: (page - 1) * ITEMS_PER_PAGE,
+      }),
+      prisma.movimiento.count({ where }),
+      prisma.movimiento.aggregate({
+        where: {
+          usuario: { empresaId: usuario.empresaId },
+          createdAt: { gte: inicioMes },
+        },
+        _sum: { cantidad: true },
+        _count: true,
+      }),
+      prisma.producto.findMany({
+        where: { empresaId: usuario.empresaId, activo: true },
+        select: { id: true, nombre: true, sku: true },
+        orderBy: { nombre: "asc" },
+      }),
+      usuario.rol === "ADMIN"
+        ? prisma.usuario.findMany({
+            where: { empresaId: usuario.empresaId },
+            select: { id: true, nombre: true },
+            orderBy: { nombre: "asc" },
+          })
+        : Promise.resolve([]),
+      prisma.movimiento.aggregate({
+        where: {
+          usuario: { empresaId: usuario.empresaId },
+          tipo: { in: ["ENTRADA", "DEVOLUCION"] },
+          createdAt: { gte: inicioMes },
+        },
+        _sum: { cantidad: true },
+      }),
+      prisma.movimiento.aggregate({
+        where: {
+          usuario: { empresaId: usuario.empresaId },
+          tipo: { in: ["SALIDA", "AJUSTE_NEG"] },
+          createdAt: { gte: inicioMes },
+        },
+        _sum: { cantidad: true },
+      }),
+    ]);
 
-  const productos = productosRaw;
-  const usuarios = usuariosRaw;
+    movimientos = movimientosRaw;
+    total = totalRaw;
+    resumen = { _count: resumenRaw._count, _sum: { cantidad: resumenRaw._sum.cantidad ?? 0 } };
+    productos = productosRaw;
+    usuarios = usuariosRaw;
+    entradas = { _sum: { cantidad: entradasRaw._sum.cantidad ?? 0 } };
+    salidas = { _sum: { cantidad: salidasRaw._sum.cantidad ?? 0 } };
+  } catch {
+    // Database unavailable (offline) — render with empty data, OfflineAware will show offline content
+  }
 
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 

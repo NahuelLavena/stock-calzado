@@ -25,80 +25,103 @@ export default async function DashboardPage() {
   const usuario = await requireUsuarioAuth();
   const empresaId = usuario.empresaId;
   const now = new Date();
-  const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1);
-  const hace30Dias = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-  const [
-    totalProductos,
-    totalStock,
-    movimientosMes,
-    stockBajo,
-    ultimosMovimientos,
-    entradasMes,
-    salidasMes,
-    movimientosChart,
-  ] = await Promise.all([
-    prisma.producto.count({
-      where: { empresaId, activo: true },
-    }),
-    prisma.tallaje.aggregate({
-      where: { producto: { empresaId, activo: true } },
-      _sum: { stock: true },
-    }),
-    prisma.movimiento.count({
-      where: {
-        usuario: { empresaId },
-        createdAt: { gte: inicioMes },
-      },
-    }),
-    prisma.tallaje.findMany({
-      where: {
-        stock: { lte: 5 },
-        producto: { empresaId, activo: true },
-      },
-      include: { producto: { select: { nombre: true, sku: true } } },
-      take: 5,
-    }),
-    prisma.movimiento.findMany({
-      where: { usuario: { empresaId } },
-      include: {
-        usuario: { select: { nombre: true } },
-        tallaje: {
-          include: { producto: { select: { nombre: true } } },
+  let totalProductos = 0;
+  let totalStock = { _sum: { stock: 0 } };
+  let movimientosMes = 0;
+  let stockBajo: Array<{ id: string; productoId: string; talla: string; color: string; stock: number; producto: { nombre: string; sku: string } }> = [];
+  let ultimosMovimientos: Array<{ id: string; tipo: string; cantidad: number; createdAt: Date; usuario: { nombre: string }; tallaje: { talla: string; color: string; producto: { nombre: string } } }> = [];
+  let entradasMes = { _sum: { cantidad: 0 } };
+  let salidasMes = { _sum: { cantidad: 0 } };
+  let movimientosChart: Array<{ tipo: string; cantidad: number; createdAt: Date }> = [];
+
+  try {
+    const inicioMes = new Date(now.getFullYear(), now.getMonth(), 1);
+    const hace30Dias = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const [
+      totalProductosResult,
+      totalStockResult,
+      movimientosMesResult,
+      stockBajoResult,
+      ultimosMovimientosResult,
+      entradasMesResult,
+      salidasMesResult,
+      movimientosChartResult,
+    ] = await Promise.all([
+      prisma.producto.count({
+        where: { empresaId, activo: true },
+      }),
+      prisma.tallaje.aggregate({
+        where: { producto: { empresaId, activo: true } },
+        _sum: { stock: true },
+      }),
+      prisma.movimiento.count({
+        where: {
+          usuario: { empresaId },
+          createdAt: { gte: inicioMes },
         },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-    prisma.movimiento.aggregate({
-      where: {
-        usuario: { empresaId },
-        tipo: { in: ["ENTRADA", "DEVOLUCION"] },
-        createdAt: { gte: inicioMes },
-      },
-      _sum: { cantidad: true },
-    }),
-    prisma.movimiento.aggregate({
-      where: {
-        usuario: { empresaId },
-        tipo: { in: ["SALIDA", "AJUSTE_NEG"] },
-        createdAt: { gte: inicioMes },
-      },
-      _sum: { cantidad: true },
-    }),
-    prisma.movimiento.findMany({
-      where: {
-        usuario: { empresaId },
-        createdAt: { gte: hace30Dias },
-      },
-      select: {
-        tipo: true,
-        cantidad: true,
-        createdAt: true,
-      },
-      orderBy: { createdAt: "asc" },
-    }),
-  ]);
+      }),
+      prisma.tallaje.findMany({
+        where: {
+          stock: { lte: 5 },
+          producto: { empresaId, activo: true },
+        },
+        include: { producto: { select: { nombre: true, sku: true } } },
+        take: 5,
+      }),
+      prisma.movimiento.findMany({
+        where: { usuario: { empresaId } },
+        include: {
+          usuario: { select: { nombre: true } },
+          tallaje: {
+            include: { producto: { select: { nombre: true } } },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+      prisma.movimiento.aggregate({
+        where: {
+          usuario: { empresaId },
+          tipo: { in: ["ENTRADA", "DEVOLUCION"] },
+          createdAt: { gte: inicioMes },
+        },
+        _sum: { cantidad: true },
+      }),
+      prisma.movimiento.aggregate({
+        where: {
+          usuario: { empresaId },
+          tipo: { in: ["SALIDA", "AJUSTE_NEG"] },
+          createdAt: { gte: inicioMes },
+        },
+        _sum: { cantidad: true },
+      }),
+      prisma.movimiento.findMany({
+        where: {
+          usuario: { empresaId },
+          createdAt: { gte: hace30Dias },
+        },
+        select: {
+          tipo: true,
+          cantidad: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "asc" },
+      }),
+    ]);
+
+    totalProductos = totalProductosResult;
+    totalStock = { _sum: { stock: totalStockResult._sum.stock ?? 0 } };
+    movimientosMes = movimientosMesResult;
+    stockBajo = stockBajoResult;
+    ultimosMovimientos = ultimosMovimientosResult;
+    entradasMes = { _sum: { cantidad: entradasMesResult._sum.cantidad ?? 0 } };
+    salidasMes = { _sum: { cantidad: salidasMesResult._sum.cantidad ?? 0 } };
+    movimientosChart = movimientosChartResult;
+  } catch {
+    // Database unavailable (offline) — render with empty data, OfflineAware will show offline content
+  }
 
   const puedeCrearMovimiento =
     usuario?.rol === "ADMIN" || usuario?.puedeEditarStock;

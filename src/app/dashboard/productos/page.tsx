@@ -40,52 +40,64 @@ export default async function ProductosPage({
   const marca = typeof params.marca === "string" ? params.marca : "";
   const page = Math.max(1, parseInt(typeof params.page === "string" ? params.page : "1"));
 
-  const where: Record<string, unknown> = {
-    empresaId: usuario.empresaId,
-  };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let productos: Array<{ id: string; sku: string; nombre: string; marca: string; categoria: string; precio: any; activo: boolean; tallas: { stock: number }[] }> = [];
+  let total = 0;
+  let marcas: string[] = [];
 
-  if (search) {
-    where.OR = [
-      { nombre: { contains: search, mode: "insensitive" } },
-      { sku: { contains: search, mode: "insensitive" } },
-      { marca: { contains: search, mode: "insensitive" } },
-    ];
+  try {
+    const where: Record<string, unknown> = {
+      empresaId: usuario.empresaId,
+    };
+
+    if (search) {
+      where.OR = [
+        { nombre: { contains: search, mode: "insensitive" } },
+        { sku: { contains: search, mode: "insensitive" } },
+        { marca: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (categoria) {
+      where.categoria = categoria;
+    }
+
+    if (marca) {
+      where.marca = marca;
+    }
+
+    if (estado === "activo") {
+      where.activo = true;
+    } else if (estado === "inactivo") {
+      where.activo = false;
+    }
+
+    const [productosRaw, totalRaw, marcasRaw] = await Promise.all([
+      prisma.producto.findMany({
+        where,
+        include: {
+          tallas: { select: { stock: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take: ITEMS_PER_PAGE,
+        skip: (page - 1) * ITEMS_PER_PAGE,
+      }),
+      prisma.producto.count({ where }),
+      prisma.producto.findMany({
+        where: { empresaId: usuario.empresaId },
+        select: { marca: true },
+        distinct: ["marca"],
+        orderBy: { marca: "asc" },
+      }),
+    ]);
+
+    productos = productosRaw;
+    total = totalRaw;
+    marcas = marcasRaw.map((m) => m.marca);
+  } catch {
+    // Database unavailable (offline) — render with empty data, OfflineAware will show offline content
   }
 
-  if (categoria) {
-    where.categoria = categoria;
-  }
-
-  if (marca) {
-    where.marca = marca;
-  }
-
-  if (estado === "activo") {
-    where.activo = true;
-  } else if (estado === "inactivo") {
-    where.activo = false;
-  }
-
-  const [productos, total, marcasRaw] = await Promise.all([
-    prisma.producto.findMany({
-      where,
-      include: {
-        tallas: { select: { stock: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: ITEMS_PER_PAGE,
-      skip: (page - 1) * ITEMS_PER_PAGE,
-    }),
-    prisma.producto.count({ where }),
-    prisma.producto.findMany({
-      where: { empresaId: usuario.empresaId },
-      select: { marca: true },
-      distinct: ["marca"],
-      orderBy: { marca: "asc" },
-    }),
-  ]);
-
-  const marcas = marcasRaw.map((m) => m.marca);
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
   const getCategoriaBadge = (categoria: string) => {
