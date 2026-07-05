@@ -77,11 +77,11 @@ beforeEach(() => {
 });
 
 const sampleProductos = [
-  { id: "p1", empresaId: "e1", sku: "SKU001", nombre: "Zapatilla A", marca: "Nike", modelo: "Air", descripcion: null, categoria: "ZAPATILLAS", precio: 100, imagenUrl: null, activo: true, createdAt: "2026-07-04T12:00:00Z", updatedAt: "2026-07-04T12:00:00Z", _synced: false },
+  { id: "p1", empresaId: "e1", sku: "SKU001", nombre: "Zapatilla A", marca: "Nike", modelo: "Air", descripcion: null, categoria: "HOMBRES", precio: 100, imagenUrl: null, activo: true, createdAt: "2026-07-04T12:00:00Z", updatedAt: "2026-07-04T12:00:00Z", _synced: false },
 ];
 
 const sampleTallas = [
-  { id: "t1", productoId: "p1", talla: "40", color: "Negro", stock: 10, stockMinimo: 3, _synced: false },
+  { id: "t1", productoId: "p1", talla: "40", color: "Negro", stock: 10, stockMinimo: 3, precioEfectivo: 100, precioTransferencia: 90, _synced: false },
 ];
 
 const sampleMovimientos = [

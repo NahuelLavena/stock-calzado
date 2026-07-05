@@ -15,12 +15,16 @@ interface ProductFiltersProps {
 
 const categorias = [
   { value: "", label: "Todas" },
-  { value: "ZAPATILLAS", label: "Zapatillas" },
-  { value: "BOTAS", label: "Botas" },
-  { value: "SANDALIAS", label: "Sandalias" },
-  { value: "ZAPATOS", label: "Zapatos" },
-  { value: "DEPORTIVOS", label: "Deportivos" },
-  { value: "OTROS", label: "Otros" },
+  { value: "HOMBRES", label: "Hombres" },
+  { value: "MUJER", label: "Mujer" },
+  { value: "NINO", label: "Niño" },
+  { value: "NINA", label: "Niña" },
+  { value: "URBANAS", label: "Urbanas" },
+  { value: "BOTINES", label: "Botines" },
+  { value: "BEBE", label: "Bebé" },
+  { value: "JUVENIL", label: "Juvenil" },
+  { value: "PANTUFLAS", label: "Pantuflas" },
+  { value: "OJOTAS", label: "Ojotas" },
 ];
 
 const estados = [

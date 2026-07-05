@@ -7,7 +7,7 @@ describe("crearProductoSchema", () => {
     nombre: "Air Max 90",
     marca: "Nike",
     modelo: "AM90",
-    categoria: "ZAPATILLAS",
+    categoria: "HOMBRES",
     precio: 129.99,
   };
 
@@ -49,7 +49,7 @@ describe("actualizarProductoSchema", () => {
       nombre: "Test",
       marca: "Test",
       modelo: "Test",
-      categoria: "ZAPATILLAS",
+      categoria: "HOMBRES",
       precio: 10,
     });
     expect(result.success).toBe(false);

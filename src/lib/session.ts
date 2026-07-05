@@ -46,6 +46,8 @@ export const getUsuarioActual = cache(async () => {
       empresa: {
         id: session.empresaId,
         nombre: session.empresaNombre,
+        slug: "",
+        logo: null,
         cuit: "",
         direccion: null,
         telefono: null,

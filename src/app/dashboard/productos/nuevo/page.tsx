@@ -11,12 +11,16 @@ import { Select } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 
 const categorias = [
-  { value: "ZAPATILLAS", label: "Zapatillas" },
-  { value: "BOTAS", label: "Botas" },
-  { value: "SANDALIAS", label: "Sandalias" },
-  { value: "ZAPATOS", label: "Zapatos" },
-  { value: "DEPORTIVOS", label: "Deportivos" },
-  { value: "OTROS", label: "Otros" },
+  { value: "HOMBRES", label: "Hombres" },
+  { value: "MUJER", label: "Mujer" },
+  { value: "NINO", label: "Niño" },
+  { value: "NINA", label: "Niña" },
+  { value: "URBANAS", label: "Urbanas" },
+  { value: "BOTINES", label: "Botines" },
+  { value: "BEBE", label: "Bebé" },
+  { value: "JUVENIL", label: "Juvenil" },
+  { value: "PANTUFLAS", label: "Pantuflas" },
+  { value: "OJOTAS", label: "Ojotas" },
 ];
 
 type FormState = { error: string } | { success: true } | null;
@@ -93,13 +97,12 @@ export default function NuevoProductoPage() {
                 required
               />
               <Input
-                label="Precio"
+                label="Precio (opcional)"
                 name="precio"
                 type="number"
                 step="0.01"
                 min="0"
                 placeholder="129.99"
-                required
               />
             </div>
 

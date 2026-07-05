@@ -13,12 +13,16 @@ const COLORES = ["#3b82f6", "#22c55e", "#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4
 
 function formatLabel(value: string): string {
   const labels: Record<string, string> = {
-    ZAPATILLAS: "Zapatillas",
-    BOTAS: "Botas",
-    SANDALIAS: "Sandalias",
-    ZAPATOS: "Zapatos",
-    DEPORTIVOS: "Deportivos",
-    OTROS: "Otros",
+    HOMBRES: "Hombres",
+    MUJER: "Mujer",
+    NINO: "Niño",
+    NINA: "Niña",
+    URBANAS: "Urbanas",
+    BOTINES: "Botines",
+    BEBE: "Bebé",
+    JUVENIL: "Juvenil",
+    PANTUFLAS: "Pantuflas",
+    OJOTAS: "Ojotas",
   };
   return labels[value] ?? value;
 }

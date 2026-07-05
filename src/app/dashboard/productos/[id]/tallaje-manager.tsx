@@ -13,6 +13,8 @@ interface TallajeData {
   color: string;
   stock: number;
   stockMinimo: number;
+  precioEfectivo: number;
+  precioTransferencia: number;
 }
 
 interface TallajeManagerProps {
@@ -128,6 +130,26 @@ export function TallajeManager({
                 defaultValue="5"
               />
             </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Input
+                label="Precio Efectivo"
+                name="precioEfectivo"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                required
+              />
+              <Input
+                label="Precio Transferencia"
+                name="precioTransferencia"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                required
+              />
+            </div>
             {error && (
               <p className="text-sm text-rose-600">{error}</p>
             )}
@@ -162,6 +184,24 @@ export function TallajeManager({
                   type="number"
                   min="0"
                   defaultValue={tallaje?.stockMinimo}
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <Input
+                  label="Precio Efectivo"
+                  name="precioEfectivo"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={tallaje?.precioEfectivo}
+                />
+                <Input
+                  label="Precio Transferencia"
+                  name="precioTransferencia"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={tallaje?.precioTransferencia}
                 />
               </div>
               {error && (

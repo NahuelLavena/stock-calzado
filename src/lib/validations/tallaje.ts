@@ -6,12 +6,16 @@ export const crearTallajeSchema = z.object({
   color: z.string().min(1, "Color requerido"),
   stock: z.coerce.number().int().min(0, "No puede ser negativo"),
   stockMinimo: z.coerce.number().int().min(0, "No puede ser negativo"),
+  precioEfectivo: z.coerce.number().min(0, "No puede ser negativo"),
+  precioTransferencia: z.coerce.number().min(0, "No puede ser negativo"),
 });
 
 export const actualizarTallajeSchema = z.object({
   id: z.string().uuid(),
   stock: z.coerce.number().int().min(0, "No puede ser negativo"),
   stockMinimo: z.coerce.number().int().min(0, "No puede ser negativo"),
+  precioEfectivo: z.coerce.number().min(0, "No puede ser negativo").optional(),
+  precioTransferencia: z.coerce.number().min(0, "No puede ser negativo").optional(),
 });
 
 export type CrearTallajeInput = z.infer<typeof crearTallajeSchema>;

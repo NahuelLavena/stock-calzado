@@ -6,12 +6,16 @@ import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { Search, Package, AlertTriangle } from "lucide-react";
 
 const CATEGORIAS = [
-  "ZAPATILLAS",
-  "BOTAS",
-  "SANDALIAS",
-  "ZAPATOS",
-  "DEPORTIVOS",
-  "OTROS",
+  "HOMBRES",
+  "MUJER",
+  "NINO",
+  "NINA",
+  "URBANAS",
+  "BOTINES",
+  "BEBE",
+  "JUVENIL",
+  "PANTUFLAS",
+  "OJOTAS",
 ];
 
 export function OfflineProductosList() {

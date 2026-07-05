@@ -21,9 +21,7 @@ export async function GET() {
     },
     include: {
       tallaje: {
-        include: {
-          producto: { select: { precio: true } },
-        },
+        select: { precioEfectivo: true },
       },
     },
   });
@@ -33,7 +31,7 @@ export async function GET() {
   movimientos.forEach((m) => {
     const fecha = new Date(m.createdAt);
     const mes = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
-    const precio = Number(m.tallaje.producto.precio);
+    const precio = Number(m.tallaje.precioEfectivo);
     const valor = m.cantidad * precio;
 
     const actual = mesMap.get(mes) ?? { cantidad: 0, valor: 0 };

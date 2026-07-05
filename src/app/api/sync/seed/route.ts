@@ -26,7 +26,7 @@ export async function GET() {
   return NextResponse.json({
     productos: productos.map((p) => ({
       ...p,
-      precio: Number(p.precio),
+      precio: p.precio != null ? Number(p.precio) : null,
       createdAt: p.createdAt.toISOString(),
       updatedAt: p.updatedAt.toISOString(),
     })),
@@ -37,6 +37,8 @@ export async function GET() {
       color: t.color,
       stock: t.stock,
       stockMinimo: t.stockMinimo,
+      precioEfectivo: Number(t.precioEfectivo),
+      precioTransferencia: Number(t.precioTransferencia),
     })),
     movimientos: movimientos.map((m) => ({
       ...m,

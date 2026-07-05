@@ -11,12 +11,16 @@ import { Select } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 
 const categorias = [
-  { value: "ZAPATILLAS", label: "Zapatillas" },
-  { value: "BOTAS", label: "Botas" },
-  { value: "SANDALIAS", label: "Sandalias" },
-  { value: "ZAPATOS", label: "Zapatos" },
-  { value: "DEPORTIVOS", label: "Deportivos" },
-  { value: "OTROS", label: "Otros" },
+  { value: "HOMBRES", label: "Hombres" },
+  { value: "MUJER", label: "Mujer" },
+  { value: "NINO", label: "Niño" },
+  { value: "NINA", label: "Niña" },
+  { value: "URBANAS", label: "Urbanas" },
+  { value: "BOTINES", label: "Botines" },
+  { value: "BEBE", label: "Bebé" },
+  { value: "JUVENIL", label: "Juvenil" },
+  { value: "PANTUFLAS", label: "Pantuflas" },
+  { value: "OJOTAS", label: "Ojotas" },
 ];
 
 type FormState = { error: string } | { success: true } | null;
@@ -29,7 +33,7 @@ interface Producto {
   modelo: string;
   descripcion: string | null;
   categoria: string;
-  precio: number;
+  precio: number | null;
   imagenUrl: string | null;
 }
 
@@ -96,13 +100,12 @@ export function EditarProductoForm({ producto }: { producto: Producto }) {
               required
             />
             <Input
-              label="Precio"
+              label="Precio (opcional)"
               name="precio"
               type="number"
               step="0.01"
               min="0"
-              defaultValue={producto.precio.toFixed(2)}
-              required
+              defaultValue={producto.precio?.toFixed(2) ?? ""}
             />
           </div>
 

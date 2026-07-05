@@ -35,6 +35,12 @@ export default async function ProductoDetailPage({
 
   const stockTotal = producto.tallas.reduce((acc, t) => acc + t.stock, 0);
 
+  const tallasForManager = producto.tallas.map((t) => ({
+    ...t,
+    precioEfectivo: Number(t.precioEfectivo),
+    precioTransferencia: Number(t.precioTransferencia),
+  }));
+
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-6">
@@ -82,7 +88,7 @@ export default async function ProductoDetailPage({
           <CardContent>
             <p className="text-sm text-slate-500">Precio</p>
             <p className="text-2xl font-bold text-slate-900">
-              ${producto.precio.toFixed(2)}
+              {producto.precio != null ? `$${producto.precio.toFixed(2)}` : "—"}
             </p>
           </CardContent>
         </Card>
@@ -128,23 +134,31 @@ export default async function ProductoDetailPage({
                 <TableHeadCell>Color</TableHeadCell>
                 <TableHeadCell>Stock</TableHeadCell>
                 <TableHeadCell className="hidden sm:table-cell">Stock Mínimo</TableHeadCell>
+                <TableHeadCell className="hidden md:table-cell">P. Efectivo</TableHeadCell>
+                <TableHeadCell className="hidden md:table-cell">P. Transfer.</TableHeadCell>
                 <TableHeadCell className="hidden sm:table-cell">Estado</TableHeadCell>
                 <TableHeadCell className="text-right">Acciones</TableHeadCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {producto.tallas.length === 0 ? (
+              {tallasForManager.length === 0 ? (
                 <TableEmpty
-                  colSpan={6}
+                  colSpan={8}
                   message="No hay talles registrados. Agregá uno."
                 />
               ) : (
-                producto.tallas.map((t) => (
+                tallasForManager.map((t) => (
                   <TableRow key={t.id}>
                     <TableCell className="font-medium">{t.talla}</TableCell>
                     <TableCell>{t.color}</TableCell>
                     <TableCell>{t.stock}</TableCell>
                     <TableCell className="hidden sm:table-cell">{t.stockMinimo}</TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      ${Number(t.precioEfectivo).toFixed(2)}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      ${Number(t.precioTransferencia).toFixed(2)}
+                    </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <Badge
                         variant={

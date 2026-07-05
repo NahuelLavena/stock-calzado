@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const categorias = ["ZAPATILLAS", "BOTAS", "SANDALIAS", "ZAPATOS", "DEPORTIVOS", "OTROS"] as const;
+const categorias = ["HOMBRES", "MUJER", "NINO", "NINA", "URBANAS", "BOTINES", "BEBE", "JUVENIL", "PANTUFLAS", "OJOTAS"] as const;
 
 export const crearProductoSchema = z.object({
   sku: z.string().min(1, "SKU requerido"),
@@ -9,7 +9,7 @@ export const crearProductoSchema = z.object({
   modelo: z.string().min(1, "Modelo requerido"),
   descripcion: z.string().optional(),
   categoria: z.enum(categorias),
-  precio: z.coerce.number().positive("Debe ser mayor a 0"),
+  precio: z.coerce.number().positive("Debe ser mayor a 0").optional(),
   imagenUrl: z.string().url("URL inválida").optional().or(z.literal("")),
 });
 
@@ -21,7 +21,7 @@ export const actualizarProductoSchema = z.object({
   modelo: z.string().min(1, "Modelo requerido"),
   descripcion: z.string().optional(),
   categoria: z.enum(categorias),
-  precio: z.coerce.number().positive("Debe ser mayor a 0"),
+  precio: z.coerce.number().positive("Debe ser mayor a 0").optional(),
   imagenUrl: z.string().url("URL inválida").optional().or(z.literal("")),
 });
 

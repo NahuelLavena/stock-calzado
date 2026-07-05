@@ -135,6 +135,8 @@ export async function crearTallaje(
     color: formData.get("color"),
     stock: formData.get("stock"),
     stockMinimo: formData.get("stockMinimo"),
+    precioEfectivo: formData.get("precioEfectivo"),
+    precioTransferencia: formData.get("precioTransferencia"),
   });
 
   if (!parsed.success) {
@@ -162,6 +164,8 @@ export async function crearTallaje(
       color: parsed.data.color,
       stock: parsed.data.stock,
       stockMinimo: parsed.data.stockMinimo,
+      precioEfectivo: parsed.data.precioEfectivo,
+      precioTransferencia: parsed.data.precioTransferencia,
     },
   });
 
@@ -180,6 +184,8 @@ export async function actualizarTallaje(
     id: formData.get("id"),
     stock: formData.get("stock"),
     stockMinimo: formData.get("stockMinimo"),
+    precioEfectivo: formData.get("precioEfectivo"),
+    precioTransferencia: formData.get("precioTransferencia"),
   });
 
   if (!parsed.success) {
@@ -200,6 +206,8 @@ export async function actualizarTallaje(
     data: {
       stock: parsed.data.stock,
       stockMinimo: parsed.data.stockMinimo,
+      ...(parsed.data.precioEfectivo != null ? { precioEfectivo: parsed.data.precioEfectivo } : {}),
+      ...(parsed.data.precioTransferencia != null ? { precioTransferencia: parsed.data.precioTransferencia } : {}),
     },
   });
 
@@ -264,7 +272,7 @@ export async function exportProductosCSV(filters: {
     Marca: p.marca,
     Modelo: p.modelo,
     Categoría: p.categoria,
-    Precio: Number(p.precio),
+    Precio: p.precio != null ? Number(p.precio) : 0,
     "Stock Total": p.tallas.reduce((acc, t) => acc + t.stock, 0),
     Estado: p.activo ? "Activo" : "Inactivo",
   }));
@@ -301,6 +309,8 @@ export async function exportStockProductoCSV(productoId: string): Promise<string
     Color: t.color,
     Stock: t.stock,
     "Stock Mínimo": t.stockMinimo,
+    "Precio Efectivo": Number(t.precioEfectivo),
+    "Precio Transferencia": Number(t.precioTransferencia),
     Estado: t.stock <= t.stockMinimo ? "Bajo" : "Normal",
   }));
 
@@ -311,6 +321,8 @@ export async function exportStockProductoCSV(productoId: string): Promise<string
     { key: "Color", header: "Color" },
     { key: "Stock", header: "Stock" },
     { key: "Stock Mínimo", header: "Stock Mínimo" },
+    { key: "Precio Efectivo", header: "Precio Efectivo" },
+    { key: "Precio Transferencia", header: "Precio Transferencia" },
     { key: "Estado", header: "Estado" },
   ]);
 

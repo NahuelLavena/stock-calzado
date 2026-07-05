@@ -8,6 +8,8 @@ describe("crearTallajeSchema", () => {
     color: "Negro",
     stock: 10,
     stockMinimo: 5,
+    precioEfectivo: 100,
+    precioTransferencia: 90,
   };
 
   it("rejects negative stock", () => {
@@ -37,6 +39,8 @@ describe("actualizarTallajeSchema", () => {
       id: "550e8400-e29b-41d4-a716-446655440000",
       stock: 5,
       stockMinimo: 2,
+      precioEfectivo: 100,
+      precioTransferencia: 90,
     });
     expect(result.success).toBe(true);
   });

@@ -5,7 +5,7 @@ import { getUsuarioActual } from "@/lib/session";
 
 const syncActionSchema = z.enum(["create", "update", "delete"]);
 
-const categorias = ["ZAPATILLAS", "BOTAS", "SANDALIAS", "ZAPATOS", "DEPORTIVOS", "OTROS"] as const;
+const categorias = ["HOMBRES", "MUJER", "NINO", "NINA", "URBANAS", "BOTINES", "BEBE", "JUVENIL", "PANTUFLAS", "OJOTAS"] as const;
 
 const productDataSchema = z.object({
   id: z.string().uuid(),
@@ -15,7 +15,7 @@ const productDataSchema = z.object({
   modelo: z.string().min(1),
   descripcion: z.string().optional().nullable(),
   categoria: z.enum(categorias).optional(),
-  precio: z.number().positive(),
+  precio: z.number().optional().nullable(),
   imagenUrl: z.string().optional().nullable(),
   activo: z.boolean(),
   tallas: z
@@ -26,6 +26,8 @@ const productDataSchema = z.object({
         color: z.string().min(1),
         stock: z.number().int().min(0),
         stockMinimo: z.number().int().min(0),
+        precioEfectivo: z.number().min(0),
+        precioTransferencia: z.number().min(0),
       })
     )
     .optional(),
@@ -65,7 +67,7 @@ export async function POST(request: Request) {
             modelo: data.modelo,
             descripcion: data.descripcion ?? null,
             ...(data.categoria ? { categoria: data.categoria } : {}),
-            precio: data.precio,
+            ...(data.precio != null ? { precio: data.precio } : {}),
             imagenUrl: data.imagenUrl ?? null,
             activo: data.activo,
             empresaId: usuario.empresaId,
@@ -84,10 +86,14 @@ export async function POST(request: Request) {
                   color: talla.color,
                   stock: talla.stock,
                   stockMinimo: talla.stockMinimo,
+                  precioEfectivo: talla.precioEfectivo,
+                  precioTransferencia: talla.precioTransferencia,
                 },
                 update: {
                   stock: talla.stock,
                   stockMinimo: talla.stockMinimo,
+                  precioEfectivo: talla.precioEfectivo,
+                  precioTransferencia: talla.precioTransferencia,
                 },
               })
             )
@@ -107,7 +113,7 @@ export async function POST(request: Request) {
             modelo: data.modelo,
             descripcion: data.descripcion ?? null,
             ...(data.categoria ? { categoria: data.categoria } : {}),
-            precio: data.precio,
+            ...(data.precio != null ? { precio: data.precio } : {}),
             imagenUrl: data.imagenUrl ?? null,
             activo: data.activo,
           },

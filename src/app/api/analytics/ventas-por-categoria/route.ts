@@ -19,9 +19,10 @@ export async function GET() {
       tallaje: {
         include: {
           producto: {
-            select: { categoria: true, marca: true, precio: true },
+            select: { categoria: true, marca: true },
           },
         },
+        select: { precioEfectivo: true },
       },
     },
   });
@@ -30,8 +31,8 @@ export async function GET() {
   const marcaMap = new Map<string, { cantidad: number; valor: number }>();
 
   movimientos.forEach((m) => {
-    const { categoria, marca, precio } = m.tallaje.producto;
-    const valor = m.cantidad * Number(precio);
+    const { categoria, marca } = m.tallaje.producto;
+    const valor = m.cantidad * Number(m.tallaje.precioEfectivo);
 
     const catActual = categoriaMap.get(categoria) ?? { cantidad: 0, valor: 0 };
     categoriaMap.set(categoria, {

@@ -9,7 +9,7 @@ export interface OfflineProducto {
   modelo: string;
   descripcion: string | null;
   categoria: string;
-  precio: number;
+  precio: number | null;
   imagenUrl: string | null;
   activo: boolean;
   createdAt: string;
@@ -24,6 +24,8 @@ export interface OfflineTallaje {
   color: string;
   stock: number;
   stockMinimo: number;
+  precioEfectivo: number;
+  precioTransferencia: number;
   _synced: boolean;
 }
 
