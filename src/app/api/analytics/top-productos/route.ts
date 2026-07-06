@@ -10,11 +10,15 @@ export async function GET() {
 
   const empresaId = usuario.empresaId;
 
+  const hace6Meses = new Date();
+  hace6Meses.setMonth(hace6Meses.getMonth() - 6);
+
   const topProductos = await prisma.movimiento.groupBy({
     by: ["tallajeId"],
     where: {
       usuario: { empresaId },
       tipo: { in: ["SALIDA", "AJUSTE_NEG"] },
+      createdAt: { gte: hace6Meses },
     },
     _sum: { cantidad: true },
     orderBy: { _sum: { cantidad: "desc" } },

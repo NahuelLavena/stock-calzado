@@ -19,6 +19,7 @@ export async function GET() {
       tipo: { in: ["SALIDA", "AJUSTE_NEG"] },
       createdAt: { gte: hace6Meses },
     },
+    take: 5000,
     include: {
       tallaje: {
         select: { precioEfectivo: true },

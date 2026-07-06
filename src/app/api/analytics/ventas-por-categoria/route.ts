@@ -10,11 +10,16 @@ export async function GET() {
 
   const empresaId = usuario.empresaId;
 
+  const hace6Meses = new Date();
+  hace6Meses.setMonth(hace6Meses.getMonth() - 6);
+
   const movimientos = await prisma.movimiento.findMany({
     where: {
       usuario: { empresaId },
       tipo: { in: ["SALIDA", "AJUSTE_NEG"] },
+      createdAt: { gte: hace6Meses },
     },
+    take: 5000,
     include: {
       tallaje: {
         include: {

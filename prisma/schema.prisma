@@ -112,6 +112,8 @@ model Movimiento {
 
   @@index([tallajeId])
   @@index([usuarioId, createdAt])
+  @@index([usuarioId, tipo, createdAt])
+  @@index([tallajeId, tipo])
 }
 
 // ============================
