@@ -89,7 +89,7 @@ export default function NuevoProductoPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Select
                 label="Categoría"
                 name="categoria"
@@ -103,6 +103,14 @@ export default function NuevoProductoPage() {
                 step="0.01"
                 min="0"
                 placeholder="129.99"
+              />
+              <Input
+                label="Precio Costo (opcional)"
+                name="precioCosto"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="89.99"
               />
             </div>
 

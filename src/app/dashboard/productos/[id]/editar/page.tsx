@@ -33,7 +33,11 @@ export default async function EditarProductoPage({
       </div>
 
       <EditarProductoForm
-        producto={{ ...producto, precio: Number(producto.precio) }}
+        producto={{
+          ...producto,
+          precio: producto.precio != null ? Number(producto.precio) : null,
+          precioCosto: producto.precioCosto != null ? Number(producto.precioCosto) : null,
+        }}
       />
     </div>
   );

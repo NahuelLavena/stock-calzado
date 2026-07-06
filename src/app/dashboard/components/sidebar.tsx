@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { href: "/dashboard", label: "Inicio", icon: "🏠" },
   { href: "/dashboard/productos", label: "Productos", icon: "👟" },
+  { href: "/dashboard/ventas", label: "Ventas", icon: "🛒" },
   { href: "/dashboard/movimientos", label: "Movimientos", icon: "📦" },
-  { href: "/dashboard/reportes/valor-salidas", label: "Reporte Salidas", icon: "💰", adminOnly: true },
   { href: "/dashboard/analytics", label: "Analytics", icon: "📊", adminOnly: true },
   { href: "/dashboard/usuarios", label: "Usuarios", icon: "👥", adminOnly: true },
 ];

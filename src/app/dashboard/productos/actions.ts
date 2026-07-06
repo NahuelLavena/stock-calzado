@@ -25,6 +25,7 @@ export async function crearProducto(
     descripcion: formData.get("descripcion"),
     categoria: formData.get("categoria"),
     precio: formData.get("precio"),
+    precioCosto: formData.get("precioCosto"),
     imagenUrl: formData.get("imagenUrl"),
   });
 
@@ -68,6 +69,7 @@ export async function actualizarProducto(
     descripcion: formData.get("descripcion"),
     categoria: formData.get("categoria"),
     precio: formData.get("precio"),
+    precioCosto: formData.get("precioCosto"),
     imagenUrl: formData.get("imagenUrl"),
   });
 
@@ -93,6 +95,7 @@ export async function actualizarProducto(
       descripcion: parsed.data.descripcion || null,
       categoria: parsed.data.categoria,
       precio: parsed.data.precio,
+      precioCosto: parsed.data.precioCosto,
       imagenUrl: parsed.data.imagenUrl || null,
     },
   });

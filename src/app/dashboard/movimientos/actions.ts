@@ -98,13 +98,19 @@ export async function getTallajesPorProducto(productoId: string) {
   const usuario = await getUsuarioActual();
   if (!usuario) return [];
 
-  return prisma.tallaje.findMany({
+  const tallas = await prisma.tallaje.findMany({
     where: {
       productoId,
       producto: { empresaId: usuario.empresaId },
     },
     orderBy: [{ talla: "asc" }, { color: "asc" }],
   });
+
+  return tallas.map((t) => ({
+    ...t,
+    precioEfectivo: Number(t.precioEfectivo),
+    precioTransferencia: Number(t.precioTransferencia),
+  }));
 }
 
 export async function eliminarMovimiento(
@@ -322,7 +328,7 @@ export async function getMovimientoPorId(id: string) {
   const usuario = await getUsuarioActual();
   if (!usuario) return null;
 
-  return prisma.movimiento.findFirst({
+  const movimiento = await prisma.movimiento.findFirst({
     where: {
       id,
       usuario: { empresaId: usuario.empresaId },
@@ -335,13 +341,24 @@ export async function getMovimientoPorId(id: string) {
       },
     },
   });
+
+  if (!movimiento) return null;
+
+  return {
+    ...movimiento,
+    tallaje: {
+      ...movimiento.tallaje,
+      precioEfectivo: Number(movimiento.tallaje.precioEfectivo),
+      precioTransferencia: Number(movimiento.tallaje.precioTransferencia),
+    },
+  };
 }
 
 export async function getProductosConTallajes() {
   const usuario = await getUsuarioActual();
   if (!usuario) return [];
 
-  return prisma.producto.findMany({
+  const productos = await prisma.producto.findMany({
     where: {
       empresaId: usuario.empresaId,
       activo: true,
@@ -353,4 +370,15 @@ export async function getProductosConTallajes() {
     },
     orderBy: { nombre: "asc" },
   });
+
+  return productos.map((p) => ({
+    ...p,
+    precio: p.precio != null ? Number(p.precio) : null,
+    precioCosto: p.precioCosto != null ? Number(p.precioCosto) : null,
+    tallas: p.tallas.map((t) => ({
+      ...t,
+      precioEfectivo: Number(t.precioEfectivo),
+      precioTransferencia: Number(t.precioTransferencia),
+    })),
+  }));
 }

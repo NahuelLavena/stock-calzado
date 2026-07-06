@@ -465,6 +465,74 @@ async function main() {
   await prisma.movimiento.createMany({ data: movimientosData });
   console.log(`✅ ${movimientosData.length} movimientos creados`);
 
+  // 5. Crear clientes de ejemplo
+  const clientesData = [
+    { nombre: "Juan Pérez", telefono: "11-5555-1234", email: "juan.perez@email.com" },
+    { nombre: "María García", telefono: "11-5555-5678", email: "maria.garcia@email.com" },
+    { nombre: "Carlos López", telefono: "11-5555-9012" },
+    { nombre: "Ana Martínez", telefono: "11-5555-3456", email: "ana.martinez@email.com" },
+    { nombre: "Roberto Sánchez", telefono: "11-5555-7890" },
+    { nombre: "Laura Fernández", email: "laura.f@email.com" },
+    { nombre: "Pedro Gómez", telefono: "11-5555-2345" },
+    { nombre: "Sofía Díaz", telefono: "11-5555-6789", email: "sofia.diaz@email.com" },
+  ];
+
+  const clientesCreados: Array<{ id: string; nombre: string }> = [];
+  for (const clienteData of clientesData) {
+    const cliente = await prisma.cliente.create({
+      data: {
+        ...clienteData,
+        empresaId: empresa.id,
+      },
+    });
+    clientesCreados.push(cliente);
+  }
+  console.log(`✅ ${clientesCreados.length} clientes creados`);
+
+  // 6. Crear ventas de ejemplo (basadas en movimientos SALIDA existentes)
+  const salidasExistentes = await prisma.movimiento.findMany({
+    where: {
+      tipo: "SALIDA",
+      tallaje: { producto: { empresaId: empresa.id } },
+    },
+    include: {
+      tallaje: {
+        select: {
+          precioEfectivo: true,
+          precioTransferencia: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const metodosPago = ["EFECTIVO", "TRANSFERENCIA", "TARJETA_DEBITO", "TARJETA_CREDITO"] as const;
+
+  const ventasData = salidasExistentes.map((mov, i) => {
+    const metodo = metodosPago[i % metodosPago.length];
+    const precio = metodo === "EFECTIVO"
+      ? Number(mov.tallaje.precioEfectivo)
+      : Number(mov.tallaje.precioTransferencia);
+    const cliente = clientesCreados[i % clientesCreados.length];
+
+    return {
+      empresaId: empresa.id,
+      clienteId: cliente.id,
+      usuarioId: mov.usuarioId,
+      tallajeId: mov.tallajeId,
+      metodoPago: metodo,
+      cantidad: mov.cantidad,
+      precioUnitario: precio,
+      total: precio * mov.cantidad,
+      motivo: mov.motivo,
+      movimientoId: mov.id,
+      createdAt: mov.createdAt,
+    };
+  });
+
+  await prisma.venta.createMany({ data: ventasData });
+  console.log(`✅ ${ventasData.length} ventas creadas`);
+
   // Resumen
   const totalStock = await prisma.tallaje.aggregate({
     where: { producto: { empresaId: empresa.id } },
@@ -475,7 +543,9 @@ async function main() {
   console.log(`   - Empresa: ${empresa.nombre}`);
   console.log(`   - Usuarios: ${usuariosCreados.length}`);
   console.log(`   - Productos: ${productosCreados.length}`);
+  console.log(`   - Clientes: ${clientesCreados.length}`);
   console.log(`   - Movimientos: ${movimientosData.length}`);
+  console.log(`   - Ventas: ${ventasData.length}`);
   console.log(`   - Stock total: ${totalStock._sum.stock ?? 0} unidades`);
   console.log("\n🔐 Credenciales de usuario:");
   for (const u of USUARIOS) {

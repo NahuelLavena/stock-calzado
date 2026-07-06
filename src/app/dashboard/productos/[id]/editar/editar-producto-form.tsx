@@ -34,6 +34,7 @@ interface Producto {
   descripcion: string | null;
   categoria: string;
   precio: number | null;
+  precioCosto: number | null;
   imagenUrl: string | null;
 }
 
@@ -91,7 +92,7 @@ export function EditarProductoForm({ producto }: { producto: Producto }) {
             />
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Select
               label="Categoría"
               name="categoria"
@@ -106,6 +107,14 @@ export function EditarProductoForm({ producto }: { producto: Producto }) {
               step="0.01"
               min="0"
               defaultValue={producto.precio?.toFixed(2) ?? ""}
+            />
+            <Input
+              label="Precio Costo (opcional)"
+              name="precioCosto"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={producto.precioCosto?.toFixed(2) ?? ""}
             />
           </div>
 

@@ -10,6 +10,7 @@ export const crearProductoSchema = z.object({
   descripcion: z.string().optional(),
   categoria: z.enum(categorias),
   precio: z.coerce.number().positive("Debe ser mayor a 0").optional(),
+  precioCosto: z.coerce.number().min(0, "No puede ser negativo").optional(),
   imagenUrl: z.string().url("URL inválida").optional().or(z.literal("")),
 });
 
@@ -22,6 +23,7 @@ export const actualizarProductoSchema = z.object({
   descripcion: z.string().optional(),
   categoria: z.enum(categorias),
   precio: z.coerce.number().positive("Debe ser mayor a 0").optional(),
+  precioCosto: z.coerce.number().min(0, "No puede ser negativo").optional(),
   imagenUrl: z.string().url("URL inválida").optional().or(z.literal("")),
 });
 

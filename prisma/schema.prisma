@@ -19,9 +19,11 @@ model Empresa {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  usuarios    Usuario[]
-  productos   Producto[]
+  usuarios       Usuario[]
+  productos      Producto[]
   notificaciones Notificacion[]
+  clientes       Cliente[]
+  ventas         Venta[]
 }
 
 model Usuario {
@@ -38,6 +40,7 @@ model Usuario {
 
   empresa     Empresa      @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   movimientos Movimiento[]
+  ventas      Venta[]
 
   @@index([empresaId])
   @@index([supabaseUserId])
@@ -57,6 +60,7 @@ model Producto {
   categoria   Categoria  @default(HOMBRES)
   imagenUrl   String?
   precio      Decimal?   @db.Decimal(10, 2)
+  precioCosto Decimal?   @db.Decimal(10, 2)
   activo      Boolean    @default(true)
   empresaId   String     @db.Uuid
   createdAt   DateTime   @default(now())
@@ -83,6 +87,7 @@ model Tallaje {
 
   producto    Producto    @relation(fields: [productoId], references: [id], onDelete: Cascade)
   movimientos Movimiento[]
+  ventas      Venta[]
 
   @@unique([productoId, talla, color])
   @@index([productoId])
@@ -128,6 +133,49 @@ model Notificacion {
 }
 
 // ============================
+// MODELOS DE VENTAS
+// ============================
+
+model Cliente {
+  id        String   @id @default(uuid()) @db.Uuid
+  nombre    String
+  telefono  String?
+  email     String?
+  empresaId String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  empresa Empresa @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  ventas   Venta[]
+
+  @@index([empresaId])
+  @@index([empresaId, nombre])
+}
+
+model Venta {
+  id               String      @id @default(uuid()) @db.Uuid
+  empresaId        String      @db.Uuid
+  clienteId        String?     @db.Uuid
+  usuarioId        String      @db.Uuid
+  tallajeId        String      @db.Uuid
+  metodoPago       MetodoPago
+  cantidad         Int
+  precioUnitario   Decimal     @db.Decimal(10, 2)
+  total            Decimal     @db.Decimal(10, 2)
+  motivo           String?
+  movimientoId     String?     @db.Uuid
+  createdAt        DateTime    @default(now())
+
+  empresa   Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
+  cliente   Cliente?  @relation(fields: [clienteId], references: [id], onDelete: SetNull)
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  tallaje   Tallaje   @relation(fields: [tallajeId], references: [id], onDelete: Cascade)
+
+  @@index([empresaId, createdAt])
+  @@index([empresaId, clienteId])
+  @@index([tallajeId])
+}
+
+// ============================
 // ENUMS
 // ============================
 
@@ -156,4 +204,12 @@ enum TipoMovimiento {
   AJUSTE_POS
   AJUSTE_NEG
   DEVOLUCION
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TRANSFERENCIA
+  TARJETA_DEBITO
+  TARJETA_CREDITO
+  OTRO
 }

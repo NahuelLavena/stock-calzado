@@ -83,12 +83,20 @@ export default async function ProductoDetailPage({
         </div>
       </div>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <CardContent>
             <p className="text-sm text-slate-500">Precio</p>
             <p className="text-2xl font-bold text-slate-900">
               {producto.precio != null ? `$${producto.precio.toFixed(2)}` : "—"}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <p className="text-sm text-slate-500">Costo</p>
+            <p className="text-2xl font-bold text-slate-900">
+              {producto.precioCosto != null ? `$${producto.precioCosto.toFixed(2)}` : "—"}
             </p>
           </CardContent>
         </Card>
@@ -107,6 +115,29 @@ export default async function ProductoDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {producto.precio != null && producto.precioCosto != null && (
+        <Card className="mb-6">
+          <CardContent className="py-4">
+            <div className="flex items-center gap-6">
+              <div>
+                <p className="text-sm text-slate-500">Margen de ganancia</p>
+                <p className="text-xl font-bold text-emerald-600">
+                  ${(Number(producto.precio) - Number(producto.precioCosto)).toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-500">Porcentaje</p>
+                <p className="text-xl font-bold text-emerald-600">
+                  {Number(producto.precioCosto) > 0
+                    ? `${(((Number(producto.precio) - Number(producto.precioCosto)) / Number(producto.precioCosto)) * 100).toFixed(1)}%`
+                    : "—"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {producto.descripcion && (
         <Card className="mb-6">
