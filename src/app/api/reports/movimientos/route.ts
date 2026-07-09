@@ -6,10 +6,11 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export async function GET(request: NextRequest) {
-  const usuario = await getUsuarioActual();
-  if (!usuario) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  try {
+    const usuario = await getUsuarioActual();
+    if (!usuario) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
 
   const { searchParams } = new URL(request.url);
   const fechaDesde = searchParams.get("fechaDesde") || "";
@@ -121,4 +122,7 @@ export async function GET(request: NextRequest) {
       "Content-Disposition": `attachment; filename="movimientos_${new Date().toISOString().split("T")[0]}.pdf"`,
     },
   });
+  } catch {
+    return NextResponse.json({ error: "Error generando reporte" }, { status: 500 });
+  }
 }

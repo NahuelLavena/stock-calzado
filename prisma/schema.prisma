@@ -107,7 +107,7 @@ model Movimiento {
   tallajeId String          @db.Uuid
   createdAt DateTime        @default(now())
 
-  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
   tallaje Tallaje @relation(fields: [tallajeId], references: [id], onDelete: Cascade)
 
   @@index([tallajeId])
@@ -165,12 +165,13 @@ model Venta {
   total            Decimal     @db.Decimal(10, 2)
   motivo           String?
   movimientoId     String?     @db.Uuid
+  numero           Int?
   createdAt        DateTime    @default(now())
 
   empresa   Empresa   @relation(fields: [empresaId], references: [id], onDelete: Cascade)
   cliente   Cliente?  @relation(fields: [clienteId], references: [id], onDelete: SetNull)
-  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
-  tallaje   Tallaje   @relation(fields: [tallajeId], references: [id], onDelete: Cascade)
+  usuario   Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  tallaje   Tallaje   @relation(fields: [tallajeId], references: [id], onDelete: Restrict)
 
   @@index([empresaId, createdAt])
   @@index([empresaId, clienteId])

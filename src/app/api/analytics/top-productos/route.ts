@@ -3,10 +3,11 @@ import { getUsuarioActual } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const usuario = await getUsuarioActual();
-  if (!usuario) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  try {
+    const usuario = await getUsuarioActual();
+    if (!usuario) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
 
   const empresaId = usuario.empresaId;
 
@@ -58,4 +59,7 @@ export async function GET() {
     .filter(Boolean);
 
   return NextResponse.json({ productos });
+  } catch {
+    return NextResponse.json({ error: "Error interno" }, { status: 500 });
+  }
 }

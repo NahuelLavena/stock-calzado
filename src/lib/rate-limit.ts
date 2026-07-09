@@ -4,16 +4,18 @@ const maxRequests = isTesting ? 1000 : 30;
 
 const hits = new Map<string, { count: number; resetAt: number }>();
 
-setInterval(() => {
+// Cleanup on each access instead of setInterval (safe for serverless)
+function cleanup() {
   const now = Date.now();
   for (const [key, value] of hits) {
     if (now > value.resetAt) {
       hits.delete(key);
     }
   }
-}, windowMs);
+}
 
 export function checkRateLimit(key: string): { allowed: boolean; remaining: number } {
+  cleanup();
   const now = Date.now();
   const entry = hits.get(key);
 
@@ -31,6 +33,7 @@ export function checkRateLimit(key: string): { allowed: boolean; remaining: numb
 }
 
 export function checkAuthRateLimit(key: string): { allowed: boolean; remaining: number } {
+  cleanup();
   const authMax = isTesting ? 1000 : 5;
   const now = Date.now();
   const entry = hits.get(`auth:${key}`);

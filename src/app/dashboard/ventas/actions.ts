@@ -14,6 +14,9 @@ export async function crearVenta(
 ): Promise<VentaState> {
   const usuario = await getUsuarioActual();
   if (!usuario) return { error: "No autorizado" };
+  if (usuario.rol === "ALMACENERO" && !usuario.puedeEditarStock) {
+    return { error: "No tenés permiso para registrar ventas" };
+  }
 
   const parsed = crearVentaSchema.safeParse({
     tallajeId: formData.get("tallajeId"),
@@ -87,10 +90,16 @@ export async function crearVenta(
     }
   }
 
-  // Create venta + movimiento + update stock in transaction
-  const nuevoStock = tallaje.stock - cantidad;
-
+  // Create venta + movimiento + update stock in transaction (atomic)
   const result = await prisma.$transaction(async (tx) => {
+    // Get next sale number for this company
+    const lastVenta = await tx.venta.findFirst({
+      where: { empresaId: usuario.empresaId },
+      orderBy: { numero: "desc" },
+      select: { numero: true },
+    });
+    const nextNumero = (lastVenta?.numero ?? 0) + 1;
+
     // Create movement
     const movimiento = await tx.movimiento.create({
       data: {
@@ -115,17 +124,23 @@ export async function crearVenta(
         total,
         motivo: motivo || null,
         movimientoId: movimiento.id,
+        numero: nextNumero,
       },
     });
 
-    // Update stock
-    await tx.tallaje.update({
-      where: { id: tallajeId },
-      data: { stock: nuevoStock },
+    // Atomic decrement with guard
+    const stockResult = await tx.tallaje.updateMany({
+      where: { id: tallajeId, stock: { gte: cantidad } },
+      data: { stock: { decrement: cantidad } },
     });
+    if (stockResult.count === 0) {
+      throw new Error(`Stock insuficiente. Stock actual: ${tallaje.stock}`);
+    }
 
     return { venta, movimiento };
   });
+
+  const nuevoStock = tallaje.stock - cantidad;
 
   if (nuevoStock <= tallaje.stockMinimo) {
     await checkStockBajo(tallajeId);
@@ -135,14 +150,18 @@ export async function crearVenta(
 }
 
 export async function getVentas(params: {
-  empresaId: string;
+  empresaId?: string;
   fechaDesde?: string;
   fechaHasta?: string;
   metodoPago?: string;
   clienteId?: string;
   page?: number;
 }) {
-  const { empresaId, fechaDesde, fechaHasta, metodoPago, clienteId, page = 1 } = params;
+  const usuario = await getUsuarioActual();
+  if (!usuario) return { ventas: [], total: 0, totalPages: 0 };
+
+  const empresaId = params.empresaId || usuario.empresaId;
+  const { fechaDesde, fechaHasta, metodoPago, clienteId, page = 1 } = params;
   const ITEMS_PER_PAGE = 20;
 
   const where: Record<string, unknown> = { empresaId };
@@ -192,9 +211,14 @@ export async function getVentas(params: {
   })), total, totalPages: Math.ceil(total / ITEMS_PER_PAGE) };
 }
 
-export async function getVentaPorId(id: string, empresaId: string) {
+export async function getVentaPorId(id: string, empresaId?: string) {
+  const usuario = await getUsuarioActual();
+  if (!usuario) return null;
+
+  const eid = empresaId || usuario.empresaId;
+
   const venta = await prisma.venta.findFirst({
-    where: { id, empresaId },
+    where: { id, empresaId: eid },
     include: {
       cliente: true,
       usuario: { select: { nombre: true, email: true } },
@@ -232,7 +256,11 @@ export async function getClientes(empresaId?: string) {
   });
 }
 
-export async function getResumenVentas(empresaId: string) {
+export async function getResumenVentas(empresaId?: string) {
+  const usuario = await getUsuarioActual();
+  if (!usuario) return { hoy: { cantidad: 0, valor: 0 }, mes: { cantidad: 0, valor: 0, unidades: 0 }, ticketPromedio: 0 };
+
+  const id = empresaId || usuario.empresaId;
   const hoy = new Date();
   hoy.setHours(23, 59, 59, 999);
 
@@ -241,19 +269,19 @@ export async function getResumenVentas(empresaId: string) {
   const [ventasHoy, ventasMes, totalUnidadesMes] = await Promise.all([
     prisma.venta.aggregate({
       where: {
-        empresaId,
+        empresaId: id,
         createdAt: { gte: new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate()), lte: hoy },
       },
       _sum: { total: true, cantidad: true },
       _count: true,
     }),
     prisma.venta.aggregate({
-      where: { empresaId, createdAt: { gte: inicioMes, lte: hoy } },
+      where: { empresaId: id, createdAt: { gte: inicioMes, lte: hoy } },
       _sum: { total: true, cantidad: true },
       _count: true,
     }),
     prisma.venta.aggregate({
-      where: { empresaId, createdAt: { gte: inicioMes, lte: hoy } },
+      where: { empresaId: id, createdAt: { gte: inicioMes, lte: hoy } },
       _sum: { cantidad: true },
     }),
   ]);
@@ -274,4 +302,36 @@ export async function getResumenVentas(empresaId: string) {
     },
     ticketPromedio,
   };
+}
+
+export async function anularVenta(
+  ventaId: string
+): Promise<{ error?: string }> {
+  const usuario = await getUsuarioActual();
+  if (!usuario) return { error: "No autorizado" };
+  if (usuario.rol !== "ADMIN") return { error: "Solo administradores pueden anular ventas" };
+
+  const venta = await prisma.venta.findFirst({
+    where: { id: ventaId, empresaId: usuario.empresaId },
+  });
+  if (!venta) return { error: "Venta no encontrada" };
+
+  // Atomic: increment stock back + delete venta + delete linked movimiento
+  await prisma.$transaction(async (tx) => {
+    // Restore stock
+    await tx.tallaje.update({
+      where: { id: venta.tallajeId },
+      data: { stock: { increment: venta.cantidad } },
+    });
+
+    // Delete linked movement if exists
+    if (venta.movimientoId) {
+      await tx.movimiento.delete({ where: { id: venta.movimientoId } });
+    }
+
+    // Delete sale
+    await tx.venta.delete({ where: { id: ventaId } });
+  });
+
+  return {};
 }

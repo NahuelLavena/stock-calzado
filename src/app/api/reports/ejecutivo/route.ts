@@ -6,10 +6,11 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export async function GET() {
-  const usuario = await getUsuarioActual();
-  if (!usuario) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
-  }
+  try {
+    const usuario = await getUsuarioActual();
+    if (!usuario) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
 
   const empresaId = usuario.empresaId;
   const now = new Date();
@@ -173,4 +174,7 @@ export async function GET() {
       "Content-Disposition": `attachment; filename="reporte_ejecutivo_${new Date().toISOString().split("T")[0]}.pdf"`,
     },
   });
+  } catch {
+    return NextResponse.json({ error: "Error generando reporte" }, { status: 500 });
+  }
 }

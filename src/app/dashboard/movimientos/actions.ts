@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getUsuarioActual } from "@/lib/session";
-import { crearMovimientoSchema } from "@/lib/validations/movimiento";
+import { crearMovimientoSchema, editarMovimientoSchema } from "@/lib/validations/movimiento";
 import { checkStockBajo } from "@/lib/notifications";
 
 type MovimientoState = { error: string } | { success: true } | null;
@@ -170,32 +170,20 @@ export async function editarMovimiento(
     return { error: "No tenés permiso para editar movimientos" };
   }
 
-  const id = formData.get("id") as string;
-  const tallajeId = formData.get("tallajeId") as string;
-  const tipo = formData.get("tipo") as string;
-  const cantidad = formData.get("cantidad") as string;
-  const motivo = formData.get("motivo") as string;
+  const parsed = editarMovimientoSchema.safeParse({
+    id: formData.get("id"),
+    tallajeId: formData.get("tallajeId"),
+    tipo: formData.get("tipo"),
+    cantidad: formData.get("cantidad"),
+    motivo: formData.get("motivo"),
+  });
 
-  if (!id || !tallajeId || !tipo || !cantidad) {
-    return { error: "Todos los campos obligatorios deben estar completos" };
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
   }
 
-  const cantidadNum = parseInt(cantidad);
-  if (isNaN(cantidadNum) || cantidadNum <= 0) {
-    return { error: "La cantidad debe ser un número mayor a 0" };
-  }
-
-  const tiposValidos = [
-    "ENTRADA",
-    "SALIDA",
-    "AJUSTE_POS",
-    "AJUSTE_NEG",
-    "DEVOLUCION",
-  ] as const;
-  if (!(tiposValidos as readonly string[]).includes(tipo)) {
-    return { error: "Tipo de movimiento no válido" };
-  }
-  const typedTipo = tipo as (typeof tiposValidos)[number];
+  const { id, tallajeId, tipo, cantidad: cantidadNum, motivo } = parsed.data;
+  const typedTipo = tipo;
 
   const movimiento = await prisma.movimiento.findFirst({
     where: {
